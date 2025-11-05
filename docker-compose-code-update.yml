@@ -1,0 +1,39 @@
+services:
+  server:
+    build: ./server
+    container_name: express-server
+    ports:
+      - "4000:4000"
+    working_dir: /usr/src/app
+    volumes:
+      - ./server:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: node --watch index.js
+    networks:
+      - myapp-network
+    restart: unless-stopped
+
+  client:
+    build: ./client
+    container_name: react-client
+    ports:
+      - "5174:5173"
+    working_dir: /usr/src/app
+    volumes:
+      - ./client:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - NODE_ENV=development
+    command: sh -c "npm ci && npm run dev"
+    depends_on:
+      - server
+    networks:
+      - myapp-network
+    restart: unless-stopped
+ 
+networks:
+  myapp-network:
+    driver: bridge
